@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>CyberSec Info Board</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #161b22;
+      padding: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #58a6ff;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    header marquee {
+      font-size: 16px;
+      color: #f0f6fc;
+    }
+    main {
+      padding: 20px;
+    }
+    h2 {
+      color: #58a6ff;
+    }
+    .cve-list {
+      list-style: none;
+      padding: 0;
+    }
+    .cve-item {
+      background: #161b22;
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .cve-id {
+      font-weight: bold;
+      color: #ffa657;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <marquee behavior="scroll" direction="left">
+      🔐 Новости кибербезопасности: Новая уязвимость в OpenSSL | Атака на крупный банк | Microsoft выпускает патч...
+    </marquee>
+  </header>
+
+  <main>
+    <h2>Последние CVE уязвимости</h2>
+    <ul class="cve-list" id="cveList">
+      <li>Загрузка данных...</li>
+    </ul>
+  </main>
+
+  <script>
+    async function fetchCVEs() {
+      try {
+        const response = await fetch("https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=5");
+        const data = await response.json();
+
+        const cveList = document.getElementById("cveList");
+        cveList.innerHTML = "";
+
+        data.vulnerabilities.forEach(vuln => {
+          const cve = vuln.cve;
+          const li = document.createElement("li");
+          li.className = "cve-item";
+          li.innerHTML = `
+            <span class="cve-id">${cve.id}</span><br>
+            ${cve.descriptions[0].value}
+          `;
+          cveList.appendChild(li);
+        });
+      } catch (error) {
+        document.getElementById("cveList").innerHTML = "<li>Ошибка загрузки данных</li>";
+        console.error(error);
+      }
+    }
+
+    fetchCVEs();
+  </script>
+</body>
+</html>
