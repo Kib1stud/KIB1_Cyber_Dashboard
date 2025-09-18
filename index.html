@@ -1,125 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>CyberSec Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KIB1 Cyber Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0d1117;
-      color: #c9d1d9;
-      margin: 0;
-      padding: 0;
+    /* Анимация самолёта */
+    .plane {
+      position: fixed;
+      top: 20px;
+      right: -50px;
+      font-size: 2rem;
+      animation: fly 8s linear infinite;
     }
-    header {
-      background: #161b22;
-      padding: 10px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #58a6ff;
-      white-space: nowrap;
-      overflow: hidden;
-    }
-    header marquee {
-      font-size: 16px;
-      color: #f0f6fc;
-    }
-    main {
-      padding: 20px;
-    }
-    h2 {
-      color: #58a6ff;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .btn {
-      background: #238636;
-      color: #fff;
-      border: none;
-      padding: 6px 12px;
-      margin-left: 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .btn:hover {
-      background: #2ea043;
-    }
-    .cve-list {
-      list-style: none;
-      padding: 0;
-    }
-    .cve-item {
-      background: #161b22;
-      margin: 8px 0;
-      padding: 10px;
-      border-radius: 8px;
-    }
-    .cve-id {
-      font-weight: bold;
-      color: #ffa657;
+    @keyframes fly {
+      0% { right: -50px; top: 20px; }
+      50% { right: 50%; top: 80px; transform: rotate(15deg); }
+      100% { right: 110%; top: 20px; }
     }
   </style>
 </head>
-<body>
-  <header>
-    <marquee behavior="scroll" direction="left" id="newsTicker">
-      Loading news...
-    </marquee>
-    <div style="padding: 8px;">
-      <button class="btn" onclick="fetchNews()">🔄 Refresh News</button>
-    </div>
+<body class="bg-gray-100 text-gray-800">
+  <!-- Самолётик -->
+  <div class="plane">✈️</div>
+
+  <!-- Шапка -->
+  <header class="bg-blue-600 text-white p-6 shadow-lg">
+    <h1 class="text-2xl font-bold">KIB1 Cyber Dashboard</h1>
   </header>
 
-  <main>
-    <h2>
-      Latest CVE Vulnerabilities
-      <button class="btn" onclick="fetchCVEs()">🔄 Refresh CVEs</button>
-    </h2>
-    <ul class="cve-list" id="cveList">
-      <li class="cve-item">
-        <span class="cve-id">CVE-Placeholder</span><br>
-        CVE data loading is disabled for now. News are working live!
-      </li>
-    </ul>
+  <!-- Контент -->
+  <main class="p-6 grid gap-6 md:grid-cols-2">
+    <!-- Блок с CVE -->
+    <section class="bg-white p-4 rounded-2xl shadow-md">
+      <h2 class="text-xl font-semibold mb-2">Последние CVE</h2>
+      <p class="text-gray-500">Live CVE feed is disabled temporarily (API issues). Stay tuned!</p>
+    </section>
+
+    <!-- Блок с новостями -->
+    <section class="bg-white p-4 rounded-2xl shadow-md">
+      <h2 class="text-xl font-semibold mb-2">Новости</h2>
+      <ul class="list-disc list-inside text-gray-600">
+        <li>Обновление Dashboard</li>
+        <li>Скоро появятся новые функции</li>
+        <li>Теперь есть анимированный самолётик ✈️</li>
+      </ul>
+    </section>
+
+    <!-- Блок с графиком (бар-чарт) -->
+    <section class="bg-white p-4 rounded-2xl shadow-md">
+      <h2 class="text-xl font-semibold mb-4">Распределение уязвимостей</h2>
+      <canvas id="cveBarChart" class="w-full h-64"></canvas>
+    </section>
+
+    <!-- Блок с графиком (pie-чарт) -->
+    <section class="bg-white p-4 rounded-2xl shadow-md">
+      <h2 class="text-xl font-semibold mb-4">Соотношение уязвимостей</h2>
+      <canvas id="cvePieChart" class="w-full h-64"></canvas>
+    </section>
   </main>
 
+  <!-- JS для графиков -->
   <script>
-    // Fetch latest cybersecurity news via rss2json
-    async function fetchNews() {
-      try {
-        const rssUrl = encodeURIComponent("https://thehackernews.com/feeds/posts/default");
-        const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}`;
-        const response = await fetch(apiUrl);
-        const data = await response.json();
+    // Данные (тестовые)
+    const labels = ['Critical', 'High', 'Medium', 'Low'];
+    const values = [12, 19, 7, 3];
+    const colors = ['#dc2626','#f97316','#facc15','#22c55e'];
 
-        const newsTicker = document.getElementById("newsTicker");
-        const headlines = data.items.slice(0, 5).map(item => item.title);
-        newsTicker.textContent = "🔐 " + headlines.join(" | ");
-      } catch (error) {
-        document.getElementById("newsTicker").textContent = "Error loading news";
-        console.error(error);
+    // Bar chart
+    new Chart(document.getElementById('cveBarChart').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Количество уязвимостей',
+          data: values,
+          backgroundColor: colors
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: 'По уровням критичности'
+          }
+        }
       }
-    }
+    });
 
-    // Placeholder CVE function
-    function fetchCVEs() {
-      const cveList = document.getElementById("cveList");
-      cveList.innerHTML = `
-        <li class="cve-item">
-          <span class="cve-id">CVE-Placeholder</span><br>
-          Live CVE feed is disabled temporarily (API issues). Stay tuned!
-        </li>
-      `;
-    }
-
-    // Initial load
-    fetchNews();
-    fetchCVEs();
-
-    // Auto refresh news every 60 seconds
-    setInterval(fetchNews, 60000);
+    // Pie chart
+    new Chart(document.getElementById('cvePieChart').getContext('2d'), {
+      type: 'pie',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: values,
+          backgroundColor: colors
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' },
+          title: {
+            display: true,
+            text: 'Доля уязвимостей'
+          }
+        }
+      }
+    });
   </script>
 </body>
 </html>
